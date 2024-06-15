@@ -27,10 +27,16 @@ public class IndexPage extends JFrame {
         if (con) loadCategories();
         con = false;
 
-        add(initTopPanel(), BorderLayout.NORTH);
-        add(initLeftPanel(), BorderLayout.WEST);
-        add(initRightPanel(), BorderLayout.EAST);
-        add(initBotPanel(), BorderLayout.SOUTH);
+        //dodan outer panel koji stavlja marginu oko svih komponenti
+        JPanel marginBox = new JPanel();
+        marginBox.setLayout(new BorderLayout());
+        marginBox.setBorder(BorderFactory.createEmptyBorder(10, 50, 10, 70));
+        setContentPane(marginBox);
+
+        marginBox.add(initTopPanel(), BorderLayout.NORTH);
+        marginBox.add(initLeftPanel(), BorderLayout.WEST);
+        marginBox.add(initRightPanel(), BorderLayout.EAST);
+        marginBox.add(initBotPanel(), BorderLayout.SOUTH);
 
         setLocationRelativeTo(null);
 
@@ -79,11 +85,13 @@ public class IndexPage extends JFrame {
         westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.Y_AXIS));
         westPanel.add(Box.createVerticalStrut(100));
         westPanel.add(label1);
+        westPanel.add(Box.createVerticalStrut(10));
         westPanel.add(label2);
         westPanel.add(label3);
-        westPanel.add(Box.createVerticalStrut(50));
-        enterName.setMaximumSize(new Dimension(500, 45));
+        westPanel.add(Box.createVerticalStrut(40));
+        enterName.setMaximumSize(new Dimension(400, 25));
         westPanel.add(nameLabel);
+        westPanel.add(Box.createVerticalStrut(10));
         westPanel.add(enterName);
         return westPanel;
     }
@@ -91,13 +99,14 @@ public class IndexPage extends JFrame {
     private Component initRightPanel() {
         JLabel label1 = new JLabel("CHOOSE A CATEGORY");
         label1.setFont(f);
-
-        categoryComboBox.setMaximumSize(new Dimension(500, 45));
+        label1.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JPanel eastPanel = new JPanel();
         eastPanel.setLayout(new BoxLayout(eastPanel, BoxLayout.Y_AXIS));
         eastPanel.add(Box.createVerticalStrut(100));
+        categoryComboBox.setMaximumSize(new Dimension(400, 25));
         eastPanel.add(label1);
+        eastPanel.add(Box.createVerticalStrut(10));
         eastPanel.add(categoryComboBox);
         return eastPanel;
     }

@@ -18,3 +18,4 @@ frenks 0 0 1
 frenks 0 0 2 
 frenks 20 2 2 Footballers:20 
 test_13_6 0 0 1 
+izgled_test 10 1 2 Animals:10 
