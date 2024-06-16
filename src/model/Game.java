@@ -7,21 +7,18 @@ import view.IndexPage;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.List;
 
+public class Game implements GuessButtonActionListener, NewGameButtonActionListener, Serializable {
+    private static final long serialVersionUID = 1L; // Added serialVersionUID
 
-//glavna klasa koja predstavlja igru, implementira sučelja za rukovanje dogadajima pritiska na gumbe
-public class Game implements GuessButtonActionListener, NewGameButtonActionListener {
-
-    private JFrame frame;
-    private JTextField letterInput;
-    private JLabel wordDisplay, playerNameLabel, scoreLabel;
-    private JTextArea missedLetters;
-    private JPanel gallowsPanel;
+    private transient JFrame frame;
+    private transient JTextField letterInput;
+    private transient JLabel wordDisplay, playerNameLabel, scoreLabel;
+    private transient JTextArea missedLetters;
+    private transient JPanel gallowsPanel;
 
     private String wordToGuess;
     private List<Character> triedLettersList = new ArrayList<>();
@@ -32,17 +29,18 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
     private int gamesPlayed = 0;
     private Map<String, List<String>> categoriesMap = new HashMap<>();
     private Map<String, Integer> categoryScores = new HashMap<>();
-    public static final String STATS_FILE = "data/player_stats.txt";
+    public static final String STATS_FILE = "data/player_stats.ser";
     private String category;
 
     public Game(String playerName) {
         this.playerName = playerName;
         loadWordsFromFile();
+        loadGameState();
         initializeGUI();
         startNewGame();
     }
 
-    private void initializeGUI() { //metoda koja postavlja izgled guija
+    private void initializeGUI() {
         frame = new JFrame("Hangman Game");
         frame.setSize(800, 480);
         frame.setResizable(false);
@@ -78,50 +76,56 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
 
         frame.add(leftPanel, BorderLayout.WEST);
 
-        playerNameLabel = new JLabel(playerName.toUpperCase());
-        Font font = new Font("serif", Font.BOLD, 20);
-        scoreLabel = new JLabel("Score: " + score);
+        try {
+            Font latoFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/Lato-Regular.ttf")).deriveFont(20f);
+            GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+            ge.registerFont(latoFont);
 
-        wordDisplay = new JLabel("");
+            playerNameLabel = new JLabel(playerName.toUpperCase());
+            playerNameLabel.setFont(latoFont);
+            scoreLabel = new JLabel("Score: " + score);
+            scoreLabel.setFont(latoFont);
+            wordDisplay = new JLabel("");
+            wordDisplay.setFont(latoFont);
 
-        JPanel rightPanel = new JPanel();
-        JPanel innerRightPanel = new JPanel();
-        innerRightPanel.setLayout(new BoxLayout(innerRightPanel, BoxLayout.Y_AXIS));
-        innerRightPanel.setBorder(BorderFactory.createEmptyBorder(70, 150, 50, 100));
-        innerRightPanel.add(rightPanel);
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-        playerNameLabel.setFont(font);
-        scoreLabel.setFont(font);
-        wordDisplay.setFont(font);
-        rightPanel.add(playerNameLabel);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        rightPanel.add(scoreLabel);
-        rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
-        rightPanel.add(wordDisplay);
+            JPanel rightPanel = new JPanel();
+            JPanel innerRightPanel = new JPanel();
+            innerRightPanel.setLayout(new BoxLayout(innerRightPanel, BoxLayout.Y_AXIS));
+            innerRightPanel.setBorder(BorderFactory.createEmptyBorder(70, 150, 50, 100));
+            innerRightPanel.add(rightPanel);
+            rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+            rightPanel.add(playerNameLabel);
+            rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+            rightPanel.add(scoreLabel);
+            rightPanel.add(Box.createRigidArea(new Dimension(0, 20)));
+            rightPanel.add(wordDisplay);
 
-        innerRightPanel.add(rightPanel, BorderLayout.CENTER);
-        frame.add(innerRightPanel, BorderLayout.CENTER);
+            innerRightPanel.add(rightPanel, BorderLayout.CENTER);
+            frame.add(innerRightPanel, BorderLayout.CENTER);
 
-        JPanel inputPanel = new JPanel(new FlowLayout());
-        letterInput = new JTextField(10);
-        letterInput.setFont(new Font("serif", Font.PLAIN, 15));
-        JButton submitButton = new JButton("Guess");
+            JPanel inputPanel = new JPanel(new FlowLayout());
+            letterInput = new JTextField(10);
+            letterInput.setFont(latoFont.deriveFont(Font.PLAIN, 15));
+            JButton submitButton = new JButton("Guess");
+            submitButton.setFont(latoFont.deriveFont(Font.PLAIN, 15));
 
-        GuessButtonAction guessButtonAction = new GuessButtonAction();
-        guessButtonAction.setGuessButtonActionListener(this);
-        submitButton.addActionListener(guessButtonAction);
+            GuessButtonAction guessButtonAction = new GuessButtonAction();
+            guessButtonAction.setGuessButtonActionListener(this);
+            submitButton.addActionListener(guessButtonAction);
 
-        JLabel inputLabel = new JLabel("Guess a letter or the word:");
-        inputLabel.setFont(new Font("serif", Font.BOLD, 15));
-        inputPanel.add(inputLabel);
-        inputPanel.add(letterInput);
-        inputPanel.add(submitButton);
+            JLabel inputLabel = new JLabel("Guess a letter or the word:");
+            inputLabel.setFont(latoFont.deriveFont(Font.BOLD, 15));
+            inputPanel.add(inputLabel);
+            inputPanel.add(letterInput);
+            inputPanel.add(submitButton);
 
-        frame.add(inputPanel, BorderLayout.SOUTH);
+            frame.add(inputPanel, BorderLayout.SOUTH);
+
+        } catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
 
         frame.setVisible(true);
-
-
     }
 
     @Override
@@ -134,7 +138,7 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         startNewGame();
     }
 
-    public void startNewGame() { //za zapocinjanje nove igre
+    public void startNewGame() {
         triedLettersList.clear();
         incorrectGuesses = 0;
         if (IndexPage.categoryComboBox.getSelectedItem() != null) {
@@ -146,6 +150,7 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         if (words != null && !words.isEmpty()) {
             int randomIndex = new Random().nextInt(words.size());
             wordToGuess = words.get(randomIndex).toUpperCase();
+            System.out.println("Selected word for category " + category + ": " + wordToGuess);
         } else {
             wordToGuess = "EXAMPLE";
         }
@@ -156,7 +161,7 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         gamesPlayed++;
     }
 
-    public void handleGuess() { //vodi tekstualnii unos korisnika
+    public void handleGuess() {
         String input = letterInput.getText().toUpperCase();
         if (input.length() == 1) {
             char letter = input.charAt(0);
@@ -200,11 +205,12 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         updateScoreLabel();
         if (incorrectGuesses >= 6) {
             JOptionPane.showMessageDialog(frame, "Game over, you lost! The word was: " + wordToGuess);
+            saveScore(); // Ensure the score is saved even if the player loses
             endGame();
         }
     }
 
-    private void continueOrEndGame(boolean guessedWord) { //provjerava je li igra gotova i postavlja upit za nastavak
+    private void continueOrEndGame(boolean guessedWord) {
         if (guessedWord) {
             JOptionPane.showMessageDialog(frame, "Congratulations! You guessed the word!");
             int choice = JOptionPane.showConfirmDialog(frame, "Continue?", "Game over", JOptionPane.YES_NO_OPTION);
@@ -213,10 +219,11 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
                 return;
             }
         }
+        saveScore(); // Ensure the score is saved if the player chooses not to continue
         endGame();
     }
 
-    private String generateWordDisplay() { //generira crtice za rijec
+    private String generateWordDisplay() {
         if (wordToGuess == null) {
             return "";
         }
@@ -230,10 +237,11 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
                 display.append("_ ");
             }
         }
+        System.out.println("Generated word display: " + display.toString());
         return display.toString();
     }
 
-    private void drawGallows(Graphics g) { //crta vjesala
+    private void drawGallows(Graphics g) {
         g.setColor(Color.BLACK);
         g.drawLine(0, 0, 0, 200);
         g.drawLine(0, 0, 100, 0);
@@ -261,9 +269,9 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
 
     private void updateGallows() {
         gallowsPanel.repaint();
-    } //ponovo crta vjesala
+    }
 
-    private void loadWordsFromFile() { //ucitava rijeci iz filea
+    private void loadWordsFromFile() {
         String currentCategory = "";
         try (BufferedReader br = new BufferedReader(new FileReader("data/words"))) {
             String line;
@@ -282,12 +290,14 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
             if (!words.isEmpty()) {
                 categoriesMap.put(currentCategory, new ArrayList<>(words));
             }
+            System.out.println("Categories and words loaded: " + categoriesMap);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void endGame() { //zavrsava igru i otvara highscore page
+    private void endGame() {
+        saveGameState();
         saveScore();
         frame.dispose();
         new HighscorePage(this, false).setVisible(true);
@@ -295,21 +305,54 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
 
     private void updateScoreLabel() {
         scoreLabel.setText("Score: " + score);
-    } //azurira prikaz bodova
-
-    public void saveScore() { //sprema bodove u datoteku
-        HighscoreManager highscoreManager = new HighscoreManager();
-        highscoreManager.savePlayerStats(playerName, score, wordsGuessed, gamesPlayed, categoryScores);
     }
 
+    public void saveScore() {
+        HighscoreManager highscoreManager = new HighscoreManager();
+        highscoreManager.savePlayerStats(playerName, score, wordsGuessed, gamesPlayed, categoryScores, category);
+    }
 
-    //prikazuje stats svih igraca
+    private void saveGameState() {
+        File directory = new File("data");
+        if (!directory.exists()) {
+            directory.mkdir();
+        }
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(getSaveFileName()))) {
+            oos.writeObject(this);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void loadGameState() {
+        String saveFileName = getSaveFileName();
+        File file = new File(saveFileName);
+        if (file.exists()) {
+            try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(saveFileName))) {
+                Game loadedGame = (Game) ois.readObject();
+                this.triedLettersList = loadedGame.triedLettersList;
+                this.incorrectGuesses = loadedGame.incorrectGuesses;
+                this.wordToGuess = loadedGame.wordToGuess;
+                this.score = loadedGame.score;
+                this.wordsGuessed = loadedGame.wordsGuessed;
+                this.gamesPlayed = loadedGame.gamesPlayed;
+                this.categoriesMap = loadedGame.categoriesMap;
+                this.categoryScores = loadedGame.categoryScores;
+                this.category = loadedGame.category;
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getSaveFileName() {
+        return "data/" + playerName + "_game.ser";
+    }
+
     public void showAllPlayersStats() {
         new HighscorePage(this, false).setVisible(true);
     }
 
-
-    //prikazuje stats trenutnog igraca
     public void showPlayerStats() {
         new HighscorePage(this, true).setVisible(true);
     }
