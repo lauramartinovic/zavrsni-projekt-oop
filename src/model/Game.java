@@ -4,15 +4,19 @@ import controller.*;
 import view.GameMenuBar;
 import view.HighscorePage;
 import view.IndexPage;
-
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
 
+/**
+ * This class represents the game logic and user interface for the Hangman game.
+ * It handles actions related to guessing letters and starting new games,
+ * and it manages the game's state, including saving and loading the state.
+ */
 public class Game implements GuessButtonActionListener, NewGameButtonActionListener, Serializable {
-    private static final long serialVersionUID = 1L; // Added serialVersionUID
+    private static final long serialVersionUID = 1L;
 
     private transient JFrame frame;
     private transient JTextField letterInput;
@@ -29,9 +33,13 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
     private int gamesPlayed = 0;
     private Map<String, List<String>> categoriesMap = new HashMap<>();
     private Map<String, Integer> categoryScores = new HashMap<>();
-    public static final String STATS_FILE = "data/player_stats.ser";
     private String category;
 
+    /**
+     * Constructs a new Game instance for the specified player.
+     *
+     * @param playerName the name of the player
+     */
     public Game(String playerName) {
         this.playerName = playerName;
         loadWordsFromFile();
@@ -40,6 +48,9 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         startNewGame();
     }
 
+    /**
+     * Initializes the graphical user interface for the game.
+     */
     private void initializeGUI() {
         frame = new JFrame("Hangman Game");
         frame.setSize(800, 480);
@@ -128,16 +139,29 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         frame.setVisible(true);
     }
 
+    /**
+     * Handles the guess button action event.
+     *
+     * @param event the GuessButtonActionEvent containing information about the event
+     */
     @Override
     public void guessButtonActionPerformed(GuessButtonActionEvent event) {
         handleGuess();
     }
 
+    /**
+     * Handles the new game button action event.
+     *
+     * @param event the NewGameButtonActionEvent containing information about the event
+     */
     @Override
     public void newGameButtonActionPerformed(NewGameButtonActionEvent event) {
         startNewGame();
     }
 
+    /**
+     * Starts a new game by selecting a new word to guess and resetting the game state.
+     */
     public void startNewGame() {
         triedLettersList.clear();
         incorrectGuesses = 0;
@@ -161,6 +185,9 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         gamesPlayed++;
     }
 
+    /**
+     * Handles the logic of guessing a letter or word in the game.
+     */
     public void handleGuess() {
         String input = letterInput.getText().toUpperCase();
         if (input.length() == 1) {
@@ -210,6 +237,11 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         }
     }
 
+    /**
+     * Continues or ends the game based on whether the player guessed the word.
+     *
+     * @param guessedWord true if the player guessed the word, false otherwise
+     */
     private void continueOrEndGame(boolean guessedWord) {
         if (guessedWord) {
             JOptionPane.showMessageDialog(frame, "Congratulations! You guessed the word!");
@@ -223,6 +255,11 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         endGame();
     }
 
+    /**
+     * Generates the display string for the word to guess, showing correctly guessed letters and underscores for missing letters.
+     *
+     * @return the display string for the word to guess
+     */
     private String generateWordDisplay() {
         if (wordToGuess == null) {
             return "";
@@ -241,6 +278,11 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         return display.toString();
     }
 
+    /**
+     * Draws the gallows and hangman figure based on the number of incorrect guesses.
+     *
+     * @param g the Graphics object used to draw the gallows and hangman figure
+     */
     private void drawGallows(Graphics g) {
         g.setColor(Color.BLACK);
         g.drawLine(0, 0, 0, 200);
@@ -267,10 +309,16 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         }
     }
 
+    /**
+     * Updates the gallows panel to reflect the current number of incorrect guesses.
+     */
     private void updateGallows() {
         gallowsPanel.repaint();
     }
 
+    /**
+     * Loads words from a file and populates the categories map.
+     */
     private void loadWordsFromFile() {
         String currentCategory = "";
         try (BufferedReader br = new BufferedReader(new FileReader("data/words"))) {
@@ -296,6 +344,9 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         }
     }
 
+    /**
+     * Ends the game by saving the game state and score, and showing the highscore page.
+     */
     private void endGame() {
         saveGameState();
         saveScore();
@@ -303,15 +354,24 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         new HighscorePage(this, false).setVisible(true);
     }
 
+    /**
+     * Updates the score label to reflect the current score.
+     */
     private void updateScoreLabel() {
         scoreLabel.setText("Score: " + score);
     }
 
+    /**
+     * Saves the player's score and other statistics.
+     */
     public void saveScore() {
         HighscoreManager highscoreManager = new HighscoreManager();
         highscoreManager.savePlayerStats(playerName, score, wordsGuessed, gamesPlayed, categoryScores, category);
     }
 
+    /**
+     * Saves the current game state to a file.
+     */
     private void saveGameState() {
         File directory = new File("data");
         if (!directory.exists()) {
@@ -324,6 +384,9 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         }
     }
 
+    /**
+     * Loads the game state from a file if it exists.
+     */
     private void loadGameState() {
         String saveFileName = getSaveFileName();
         File file = new File(saveFileName);
@@ -345,22 +408,43 @@ public class Game implements GuessButtonActionListener, NewGameButtonActionListe
         }
     }
 
+    /**
+     * Returns the filename used for saving the game state.
+     *
+     * @return the filename used for saving the game state
+     */
     private String getSaveFileName() {
         return "data/" + playerName + "_game.ser";
     }
 
+    /**
+     * Shows the highscore page with all players' statistics.
+     */
     public void showAllPlayersStats() {
         new HighscorePage(this, false).setVisible(true);
     }
 
+    /**
+     * Shows the highscore page with the current player's statistics.
+     */
     public void showPlayerStats() {
         new HighscorePage(this, true).setVisible(true);
     }
 
+    /**
+     * Sets the visibility of the game window.
+     *
+     * @param visible true to make the window visible, false to hide it
+     */
     public void setVisible(boolean visible) {
         frame.setVisible(visible);
     }
 
+    /**
+     * Gets the player's name.
+     *
+     * @return the player's name
+     */
     public String getPlayerName() {
         return playerName;
     }

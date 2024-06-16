@@ -3,17 +3,27 @@ package controller;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-
-//klasa koja implementira actionlistener za rukovanje dogadajem pritiska na gumb, posrednik između komponente i akcije koja ce se dogodit kad se pritisne gumb
+/**
+ * Class that implements ActionListener for handling button press events.
+ * Acts as a mediator between the component and the action to be performed when the button is pressed.
+ */
 public class ExitButtonAction implements ActionListener {
-    private ExitButtonActionListener listener; //referenca na objekt koji implementira ExitButtonActionListener sucelje
+    private ExitButtonActionListener listener;
 
-    //metoda koja postavlja listener
+    /**
+     * Sets the listener for this action.
+     *
+     * @param listener the listener to be set
+     */
     public void setExitButtonActionListener(ExitButtonActionListener listener) {
         this.listener = listener;
     }
 
-    //poziva metodu na listeneru kada se pritisne gumb
+    /**
+     * Calls the listener method when the button is pressed.
+     *
+     * @param e the event to be processed
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (listener != null) {

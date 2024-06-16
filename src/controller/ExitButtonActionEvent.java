@@ -2,13 +2,16 @@ package controller;
 
 import java.util.EventObject;
 
-
-//klasa koja prosiruje EventObject i predstavlja dogadaj koji se prosljeduje listeneru kada se pritisne exit gumb
-
+/**
+ * Class extending EventObject representing the event passed to the listener when the exit button is pressed.
+ */
 public class ExitButtonActionEvent extends EventObject {
 
-
-    //poziva konstruktor superklase EventObject
+    /**
+     * Calls the constructor of the superclass EventObject.
+     *
+     * @param source the object on which the Event initially occurred
+     */
     public ExitButtonActionEvent(Object source) {
         super(source);
     }

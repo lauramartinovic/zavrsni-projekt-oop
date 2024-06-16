@@ -3,15 +3,28 @@ package view;
 import model.Game;
 import model.HighscoreManager;
 import model.PlayerStats;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.File;
 import java.util.List;
 
+
+/**
+ * This class represents the high score page of the game. It displays player statistics in a table and provides buttons
+ * for navigating to the home screen, returning to the game, or exiting the application.
+ */
+
 public class HighscorePage extends JFrame {
     private JTable scoreTable;
+
+    /**
+     * Constructs a HighscorePage and initializes the user interface components.
+     *
+     * @param game the Game instance to associate with the high score page
+     * @param showCurrentPlayerOnly true to show only the current player's stats, false to show all players' stats
+     */
+
 
     public HighscorePage(Game game, boolean showCurrentPlayerOnly) {
         setTitle("Highscores");
@@ -66,6 +79,12 @@ public class HighscorePage extends JFrame {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
+    /**
+     * Loads and displays player scores, optionally filtering by a specific player.
+     *
+     * @param filterPlayer the name of the player to filter by, or null to show all players
+     */
+
     private void loadScores(String filterPlayer) {
         HighscoreManager highscoreManager = new HighscoreManager();
         List<PlayerStats> playerStatsList = highscoreManager.getPlayerStatsList();
@@ -98,6 +117,11 @@ public class HighscorePage extends JFrame {
         scoreTable.setModel(model);
     }
 
+    /**
+     * Loads and displays the statistics for a specific player.
+     *
+     * @param playerName the name of the player whose stats to display
+     */
     private void loadPlayerStats(String playerName) {
         loadScores(playerName);
     }
