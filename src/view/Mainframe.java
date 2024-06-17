@@ -2,7 +2,8 @@ package view;
 
 import controller.ExitButtonAction;
 import controller.PlayButtonAction;
-import model.Game;
+
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -10,35 +11,24 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Scanner;
 
-
-/**
- * This class represents the index page of the Hangman game. It displays the welcome screen,
- * allows the player to enter their name, choose a category, and start a new game.
- */
-
-public class IndexPage extends JFrame {
-
-    Font latoFont;
-    public static JComboBox<String> categoryComboBox = new JComboBox<>();
+public class Mainframe extends JFrame implements MainframeInterface {
+    private Font latoFont;
+    private static JComboBox<String> categoryComboBox = new JComboBox<>();
     private JTextField enterName = new JTextField();
-    static boolean con = true;
 
-
-    /**
-     * Constructs an IndexPage and initializes the user interface components.
-     *
-     * @throws HeadlessException if GraphicsEnvironment.isHeadless() returns true
-     */
-    public IndexPage() throws HeadlessException {
+    public Mainframe() {
         super("Welcome");
+        initialize();
+    }
 
+    private void initialize() {
         try {
             latoFont = Font.createFont(Font.TRUETYPE_FONT, new File("resources/Lato-Regular.ttf")).deriveFont(20f);
             GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
             ge.registerFont(latoFont);
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
-            latoFont = new Font("SansSerif", Font.PLAIN, 20); // Fallback font
+            latoFont = new Font("SansSerif", Font.PLAIN, 20);
         }
 
         setSize(800, 480);
@@ -46,10 +36,8 @@ public class IndexPage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
 
-        if (con) loadCategories();
-        con = false;
+        loadCategories();
 
-        // Add outer panel which puts a margin around all components
         JPanel marginBox = new JPanel();
         marginBox.setLayout(new BorderLayout());
         marginBox.setBorder(BorderFactory.createEmptyBorder(10, 50, 10, 70));
@@ -61,17 +49,8 @@ public class IndexPage extends JFrame {
         marginBox.add(initBotPanel(), BorderLayout.SOUTH);
 
         setLocationRelativeTo(null);
-
-        JPanel panel = (JPanel) initBotPanel();
-        add(panel, BorderLayout.SOUTH);
     }
 
-
-    /**
-     * Initializes the top panel with a welcome message.
-     *
-     * @return the top panel component
-     */
     private Component initTopPanel() {
         JPanel northPanel = new JPanel();
         JLabel label = new JLabel("Welcome to Hangman");
@@ -80,12 +59,6 @@ public class IndexPage extends JFrame {
         return northPanel;
     }
 
-
-    /**
-     * Initializes the bottom panel with play and exit buttons.
-     *
-     * @return the bottom panel component
-     */
     private Component initBotPanel() {
         JPanel panel = new JPanel(new FlowLayout());
         JButton b1 = new JButton("Play");
@@ -97,10 +70,6 @@ public class IndexPage extends JFrame {
         panel.add(b1);
 
         PlayButtonAction playButtonAction = new PlayButtonAction(enterName, categoryComboBox);
-        playButtonAction.setPlayButtonActionListener(event -> {
-            new Game(event.getPlayerName());
-            dispose();
-        });
         b1.addActionListener(playButtonAction);
 
         ExitButtonAction exitButtonAction = new ExitButtonAction();
@@ -112,12 +81,6 @@ public class IndexPage extends JFrame {
         return panel;
     }
 
-
-    /**
-     * Initializes the left panel with game rules and a text field to enter the player's name.
-     *
-     * @return the left panel component
-     */
     private Component initLeftPanel() {
         JLabel label1 = new JLabel("GAME RULES");
         label1.setFont(latoFont);
@@ -142,12 +105,6 @@ public class IndexPage extends JFrame {
         return westPanel;
     }
 
-
-    /**
-     * Initializes the right panel with a combo box for selecting a game category.
-     *
-     * @return the right panel component
-     */
     private Component initRightPanel() {
         JLabel label1 = new JLabel("CHOOSE A CATEGORY");
         label1.setFont(latoFont);
@@ -164,10 +121,6 @@ public class IndexPage extends JFrame {
         return eastPanel;
     }
 
-
-    /**
-     * Loads game categories from a file and populates the combo box.
-     */
     private void loadCategories() {
         try {
             File file = new File("data/words");
@@ -192,5 +145,20 @@ public class IndexPage extends JFrame {
                 return renderer;
             }
         });
+    }
+
+    @Override
+    public String getPlayerName() {
+        return enterName.getText();
+    }
+
+    @Override
+    public String getSelectedCategory() {
+        return (String) categoryComboBox.getSelectedItem();
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
     }
 }

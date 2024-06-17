@@ -1,6 +1,6 @@
 package controller;
 
-import view.IndexPage;
+import view.Mainframe;
 
 import javax.swing.*;
 
@@ -17,7 +17,7 @@ public class App {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                new IndexPage();
+                new Mainframe();
             }
         });
     }

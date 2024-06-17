@@ -15,7 +15,7 @@ import java.util.List;
  * for navigating to the home screen, returning to the game, or exiting the application.
  */
 
-public class HighscorePage extends JFrame {
+public class ViewPanel extends JFrame {
     private JTable scoreTable;
 
     /**
@@ -26,7 +26,7 @@ public class HighscorePage extends JFrame {
      */
 
 
-    public HighscorePage(Game game, boolean showCurrentPlayerOnly) {
+    public ViewPanel(Game game, boolean showCurrentPlayerOnly) {
         setTitle("Highscores");
         setSize(800, 480);
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -63,7 +63,7 @@ public class HighscorePage extends JFrame {
 
         homeButton.addActionListener(e -> {
             dispose();
-            new IndexPage().setVisible(true);
+            new Mainframe().setVisible(true);
         });
 
         backButton.addActionListener(e -> {
